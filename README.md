@@ -1,8 +1,12 @@
 # ⚡ RAMCore - Windows Memory Optimizer
 
+[![Latest Release](https://img.shields.io/github/v/release/bel001/RAMCore?color=00d4a4&label=Versi%C3%B3n%20Release)](https://github.com/bel001/RAMCore/releases/latest)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-blue.svg)](https://microsoft.com/windows)
-[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/bel001/RAMCore/total?color=brightgreen)](https://github.com/bel001/RAMCore/releases)
+
+> 📥 **¿Quieres usarlo de inmediato sin instalar Python?**  
+> **[Descarga directa de RAMCore.exe (Release v1.0.0)](https://github.com/bel001/RAMCore/releases/latest)**
 
 **RAMCore** es una utilidad de optimización y monitorización de memoria RAM en tiempo real para Windows. Inspirada en herramientas avanzadas de administración interna como *RAMMap (Sysinternals)*, permite liberar memoria residual, vaciar conjuntos de trabajo (*working sets*), proteger procesos críticos mediante listas de exclusión y purgar la caché de archivos y páginas en espera (*standby*) con privilegios de Administrador.
 
