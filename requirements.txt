@@ -1,2 +1,4 @@
-psutil
-pillow
+psutil>=5.9.0
+pillow>=9.0.0
+pystray>=0.19.5
+pyinstaller>=5.0.0

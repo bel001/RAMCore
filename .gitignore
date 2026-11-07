@@ -4,3 +4,11 @@ __pycache__/
 *.log
 .vscode/
 .idea/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# User local config (optional, or allow default config.json)
+# config.json

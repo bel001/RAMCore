@@ -4,42 +4,31 @@
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**RAMCore** es una utilidad de optimización y monitorización de memoria RAM en tiempo real para Windows. Inspirada en herramientas avanzadas de administración interna como *RAMMap (Sysinternals)*, permite liberar memoria residual, vaciar conjuntos de trabajo (*working sets*) y purgar la caché de archivos del sistema de forma manual o automática.
+**RAMCore** es una utilidad de optimización y monitorización de memoria RAM en tiempo real para Windows. Inspirada en herramientas avanzadas de administración interna como *RAMMap (Sysinternals)*, permite liberar memoria residual, vaciar conjuntos de trabajo (*working sets*), proteger procesos críticos mediante listas de exclusión y purgar la caché de archivos y páginas en espera (*standby*) con privilegios de Administrador.
 
 ---
 
-## 📸 Vista General
+## 📸 Interfaz Moderna por Pestañas
 
-```text
-+------------------------------------------+
-|            ⚡ RAM OPTIMIZER              |
-|   Limpieza automática estilo RAMMap      |
-|                                          |
-|                 [ 78.4% ]                |
-|  [==========================......]      |
-|  Total: 16.0 GB | En uso: 12.5 GB        |
-|                                          |
-|         [ 🧹 OPTIMIZAR AHORA ]           |
-|                                          |
-|  [x] Modo Automático                     |
-|  Optimizar si supera: [---o---] 75%      |
-|  Revisar cada: [60] seg                  |
-+------------------------------------------+
-```
+- **⚡ Optimización**: Métricas en vivo de RAM, botón de limpieza inmediata, selector de umbral y monitor automático en segundo plano.
+- **📊 Top Procesos**: Vista en vivo de los procesos que más memoria consumen, con opción de limpiar un proceso individual o agregarlo a la lista de exclusiones.
+- **⚙️ Ajustes & Exclusiones**: Gestor de lista blanca (*Whitelist*), minimización a la bandeja del sistema (*System Tray*) y botón para elevar a Administrador.
 
 ---
 
 ## ✨ Características Principales
 
-- 🔄 **Modo Automático en Segundo Plano**: Supervisa continuamente el consumo y dispara la limpieza únicamente cuando se supera un umbral configurable (ej. 75%).
+- 🔄 **Modo Automático en Segundo Plano**: Supervisa periódicamente el consumo y dispara la limpieza únicamente si se supera el umbral configurado (ej. 75%).
+- 🛡️ **Lista de Exclusión de Procesos (Whitelist)**: Protege juegos, navegadores o herramientas de trabajo para evitar el *stuttering* causado por la paginación a disco.
+- 📌 **Minimización a la Bandeja del Sistema (System Tray)**: Permite ocultar la ventana en la barra de tareas y mantener la protección en segundo plano con acceso rápido desde el icono de notificación.
+- 📊 **Monitor Top Consumidores de RAM**: Identifica con un clic qué procesos están saturando la memoria del equipo.
+- 💾 **Persistencia de Ajustes (`config.json`)**: Guarda tus preferencias automáticamente (umbral, intervalo, modo automático, lista blanca y bandeja).
 - 🧠 **Técnicas de Limpieza Profunda**:
-  - **EmptyWorkingSet**: Desalojo del working set de los procesos de usuario.
-  - **SetProcessWorkingSetSize Trim**: Reducción controlada de las cuotas de memoria asignadas a procesos activos.
-  - **Purga de Caché del Sistema (File Cache)**: Vaciado del búfer de lectura de archivos vía `SetSystemFileCacheSize` (requiere privilegios de Administrador).
-  - **Standby List Flush**: Purga de páginas en espera mediante `NtSetSystemInformation` (requiere privilegios de Administrador).
+  - **EmptyWorkingSet & Trim**: Desalojo y recorte de memoria no esencial en procesos activos.
+  - **Purga de Caché de Archivos del Sistema**: Vaciado del búfer de lectura vía `SetSystemFileCacheSize` (con privilegios de Administrador).
+  - **Standby List Flush**: Purga de páginas en espera vía `NtSetSystemInformation` habilitando `SeIncreaseQuotaPrivilege` y `SeProfileSingleProcessPrivilege`.
   - **Recolección de Basura**: Ejecución forzada de `gc.collect()`.
-- 📊 **Monitor en Tiempo Real**: Visualización reactiva con indicadores de color dinámicos según el nivel de saturación de la memoria.
-- 🔕 **Ejecución Silenciosa**: Scripts incluidos (`.bat` y `.vbs`) para operar sin ventanas de terminal abiertas.
+- 📦 **Compilación a `.EXE`**: Incluye script `build.bat` para empaquetar la aplicación en un ejecutable independiente con PyInstaller.
 
 ---
 
@@ -47,7 +36,7 @@
 
 ### Requisitos
 - **Sistema Operativo**: Windows 10 / Windows 11 (64-bit recomendado).
-- **Python**: 3.10 o superior.
+- **Python**: 3.10 o superior (o el ejecutable `.exe` compilado).
 
 ### Instalación
 1. Clona el repositorio:
@@ -65,43 +54,44 @@
 
 ## 🚀 Uso
 
-### Ejecución Estándar (Interfaz Gráfica)
+### Ejecución Directa
 ```bash
 python ram_optimizer.py
 ```
 
-### Ejecución con Privilegios Elevados (Recomendado)
-Para desbloquear la purga de la **Standby List** y la **Caché del Sistema**, abre PowerShell o CMD como **Administrador** y ejecuta:
-```bash
-python ram_optimizer.py
-```
+### Ejecución en Segundo Plano (Sin Consola)
+- Haz doble clic en **`RAM_Optimizer.vbs`** o **`RAM_Optimizer.bat`**.
 
-### Ejecución Silenciosa / Segundo Plano
-- Haz doble clic en **`RAM_Optimizer.vbs`** o **`RAM_Optimizer.bat`** para lanzar el optimizador sin dejar una consola CMD visible.
+### Compilación a Ejecutable `.EXE`
+- Ejecuta el script **`build.bat`**. Al finalizar, encontrarás tu ejecutable independiente en:
+  ```text
+  dist\RAMCore.exe
+  ```
 
 ---
 
 ## ⚙️ ¿Cómo Funciona la Optimización en Windows?
 
-A diferencia de optimizadores placebo comunes, RAMCore utiliza llamadas directas a las APIs del núcleo de Windows (`kernel32.dll`, `psapi.dll` y `ntdll.dll`):
+A diferencia de limpiadores placebo, RAMCore utiliza APIs nativas del subsistema de Windows (`kernel32.dll`, `psapi.dll`, `advapi32.dll` y `ntdll.dll`):
 
-1. **`EmptyWorkingSet` & `SetProcessWorkingSetSize`**: Indica al Administrador de Memoria de Windows que recorte las páginas físicas no esenciales de cada proceso y las traslade al archivo de paginación o las marque como disponibles.
-2. **`SetSystemFileCacheSize(-1, -1, 0)`**: Fuerza el vaciado de páginas en caché del sistema de archivos.
-3. **`NtSetSystemInformation(80, ...)`**: Invoca la orden `MemoryPurgeStandbyList` a nivel NT para liberar memoria en espera y convertirla en memoria libre de inmediato.
+1. **`EmptyWorkingSet` & `SetProcessWorkingSetSize(-1, -1)`**: Solicita al gestor de memoria virtual de Windows (*Virtual Memory Manager*) que desaloje las páginas físicas que los procesos no están usando activamente.
+2. **`SetSystemFileCacheSize(-1, -1, 0)`**: Libera la memoria consumida por lecturas y escrituras previas en disco.
+3. **`AdjustTokenPrivileges` + `NtSetSystemInformation(80, ...)`**: Eleva los privilegios de token NT para ejecutar `MemoryPurgeStandbyList` y vaciar la memoria en lista de espera sin reiniciar el equipo.
 
 ---
 
 ## 🗺️ Hoja de Ruta (Roadmap)
 
-- [ ] Minimización a la Bandeja del Sistema (System Tray con menú contextual).
-- [ ] Lista de exclusión de procesos (Whitelist) para evitar stutter en juegos o IDEs.
-- [ ] Panel con el Top 5 de procesos con mayor consumo de memoria.
-- [ ] Persistencia de ajustes en `config.json`.
+- [x] Minimización a la Bandeja del Sistema (System Tray con menú contextual).
+- [x] Lista de exclusión de procesos (Whitelist) para evitar stutter en juegos o aplicaciones críticas.
+- [x] Monitor de procesos con mayor consumo de memoria (Top RAM).
+- [x] Persistencia de configuración en `config.json`.
+- [x] Privilegios reales NT (`AdjustTokenPrivileges`) y botón de elevación UAC.
+- [x] Script de compilación a ejecutable `.exe` (`build.bat`).
 - [ ] Opción en interfaz para "Iniciar con Windows" (registro Run).
-- [ ] Compilado standalone en `.exe` sin requerir Python preinstalado.
 
 ---
 
 ## 📄 Licencia
 
-Distribuido bajo la Licencia MIT. Consulta `LICENSE` para más información.
+Distribuido bajo la Licencia MIT.
